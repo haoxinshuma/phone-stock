@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>二手手机库存台账</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2032%2032'%3E%3Crect%20width='32'%20height='32'%20rx='7'%20fill='%2312161A'/%3E%3Crect%20x='10'%20y='6.5'%20width='12'%20height='19'%20rx='2.6'%20fill='none'%20stroke='%23F1F2F0'%20stroke-width='1.8'/%3E%3C/svg%3E">
+<style>
+:root{--ink:#12161A;--ink2:#5A6268;--ink3:#8D9499;--paper:#F1F2F0;--panel:#FFFFFF;--line:#DCDED9;--line2:#EDEEEB;--red:#BC3A2B;--sold:#9AA0A4;}
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Source Han Sans SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;}
+.mast{padding:24px 18px 20px;}
+.mast-top{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+.shop{font-size:12.5px;font-weight:600;letter-spacing:.06em;color:var(--ink);}
+.stamp{font-size:12px;color:var(--ink3);letter-spacing:.03em;white-space:nowrap;}
+.mast h1{margin:12px 0 0;font-size:31px;line-height:1.15;font-weight:700;letter-spacing:-.01em;}
+.lede{margin:8px 0 0;font-size:13.5px;color:var(--ink2);max-width:24em;}
+.summary{margin-top:20px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;}
+.sum-hero{display:flex;align-items:baseline;gap:6px;position:relative;padding-bottom:5px;}
+.sum-hero::after{content:"";position:absolute;left:0;bottom:0;width:100%;height:2px;background:var(--red);}
+.sum-num{font-size:56px;line-height:1;font-weight:700;letter-spacing:-.04em;font-variant-numeric:tabular-nums;}
+.sum-unit{font-size:13px;color:var(--ink2);letter-spacing:.02em;}
+.sum-side{display:flex;flex-direction:column;gap:3px;padding-bottom:4px;}
+.sum-side span{font-size:12.5px;color:var(--ink2);}
+.search{margin:18px 18px 0;display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:0 12px;height:46px;}
+.search svg{width:17px;height:17px;flex:0 0 auto;stroke:var(--ink3);}
+.search input{flex:1 1 auto;min-width:0;border:0;outline:0;background:transparent;font-family:inherit;font-size:16px;color:var(--ink);height:100%;}
+.search input::placeholder{color:var(--ink3);}
+.search input::-webkit-search-cancel-button{-webkit-appearance:none;}
+.chips{display:flex;gap:7px;padding:12px 18px 4px;overflow-x:auto;scrollbar-width:none;}
+.chips::-webkit-scrollbar{display:none;}
+.chip{flex:0 0 auto;border:1px solid var(--line);background:transparent;color:var(--ink2);font-family:inherit;font-size:12.5px;padding:7px 13px;border-radius:999px;cursor:pointer;white-space:nowrap;transition:background .15s,color .15s,border-color .15s;}
+.chip:hover{border-color:#C3C6C0;}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff;}
+.chip .n{opacity:.55;margin-left:4px;font-variant-numeric:tabular-nums;}
+.board{margin-top:16px;background:var(--panel);border-radius:18px 18px 0 0;box-shadow:0 -1px 0 var(--line);padding-bottom:100px;min-height:52vh;}
+.board-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px 13px;border-bottom:1px solid var(--line2);}
+.meta{font-size:12.5px;color:var(--ink3);letter-spacing:.02em;}
+.meta b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums;}
+.sortwrap{position:relative;display:flex;align-items:center;}
+.sortwrap select{appearance:none;-webkit-appearance:none;font-family:inherit;font-size:12.5px;color:var(--ink);background:transparent;border:0;outline:0;padding:6px 20px 6px 8px;cursor:pointer;border-radius:6px;}
+.sortwrap select:hover{background:var(--paper);}
+.sortwrap svg{position:absolute;right:4px;top:50%;transform:translateY(-50%);width:12px;height:12px;stroke:var(--ink3);pointer-events:none;}
+.row{display:grid;grid-template-columns:2.6rem minmax(0,1fr) auto;align-items:center;gap:10px;padding:14px 18px;cursor:pointer;text-align:left;width:100%;background:none;border:0;font-family:inherit;-webkit-tap-highlight-color:transparent;}
+.row + .row{border-top:1px solid var(--line2);}
+.row:hover{background:#FAFAF7;}
+.row:active{background:#F5F6F3;}
+.row:focus-visible{outline:2px solid var(--ink);outline-offset:-2px;}
+.row-idx{font-size:11.5px;color:var(--ink3);font-variant-numeric:tabular-nums;letter-spacing:.04em;align-self:start;padding-top:3px;}
+.row-body{min-width:0;}
+.row-line{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;}
+.row-line h3{margin:0;font-size:16px;font-weight:600;letter-spacing:-.005em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.bmark{flex:0 0 auto;font-size:10.5px;color:var(--ink2);background:var(--paper);border-radius:3px;padding:1px 5px;letter-spacing:.02em;}
+.row-spec{margin-top:3px;font-size:12.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.row-flags{display:flex;gap:6px;margin-top:7px;flex-wrap:wrap;}
+.flag{font-size:11px;color:var(--ink2);border:1px solid var(--line);border-radius:4px;padding:1px 6px;font-variant-numeric:tabular-nums;}
+.flag.hl{color:var(--ink);border-color:#C9CCC6;}
+.row-price{display:flex;flex-direction:column;align-items:flex-end;gap:5px;padding-left:4px;}
+.row-price b{font-size:17.5px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap;}
+.st{font-size:11px;letter-spacing:.03em;padding:1px 6px;border-radius:3px;white-space:nowrap;}
+.st-on{color:var(--red);background:#FBEEEB;}
+.st-book{color:#1F6B45;background:#EAF3EE;}
+.st-off{color:var(--sold);background:#F2F3F1;}
+.row.is-sold .row-body,.row.is-sold .row-price b{opacity:.5;}
+.row.is-sold .row-price b{text-decoration:line-through;text-decoration-thickness:1px;}
+.empty{display:none;padding:64px 18px 60px;text-align:center;color:var(--ink3);font-size:13.5px;line-height:1.7;}
+.empty.show{display:block;}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;gap:12px;padding:11px 18px calc(11px + env(safe-area-inset-bottom));background:rgba(255,255,255,.94);backdrop-filter:saturate(140%) blur(8px);border-top:1px solid var(--line);}
+.dock-info{flex:1 1 auto;min-width:0;}
+.dock-info b{display:block;font-size:13px;font-weight:600;letter-spacing:.01em;}
+.dock-info span{display:block;font-size:11.5px;color:var(--ink3);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.btn{font-family:inherit;border:1px solid var(--ink);border-radius:9px;font-size:14px;padding:10px 18px;cursor:pointer;min-height:42px;transition:background .15s,color .15s;}
+.btn-primary{background:var(--ink);color:#fff;}
+.btn-primary:hover{background:#2A3037;}
+.btn-ghost{background:transparent;color:var(--ink);}
+.btn-ghost:hover{background:#F4F5F2;}
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(18,22,26,.42);opacity:0;visibility:hidden;transition:opacity .22s ease,visibility .22s;}
+.scrim.on{opacity:1;visibility:visible;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;background:var(--panel);border-radius:16px 16px 0 0;max-height:88vh;display:flex;flex-direction:column;transform:translateY(101%);transition:transform .26s cubic-bezier(.32,.72,0,1);}
+.sheet.on{transform:translateY(0);}
+.grab{width:38px;height:4px;border-radius:2px;background:#D9DBD6;margin:8px auto 0;flex:0 0 auto;}
+.sheet-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:12px 18px 14px;border-bottom:1px solid var(--line2);flex:0 0 auto;}
+.sheet-head h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em;line-height:1.3;}
+.sheet-sub{margin-top:4px;font-size:12.5px;color:var(--ink2);}
+.sheet-price{margin-top:8px;display:flex;align-items:baseline;gap:9px;}
+.sheet-price b{font-size:26px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.iconbtn{flex:0 0 auto;width:36px;height:36px;display:grid;place-items:center;border:0;background:transparent;border-radius:50%;cursor:pointer;color:var(--ink2);}
+.iconbtn:hover{background:var(--paper);}
+.iconbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;}
+.sheet-body{overflow-y:auto;-webkit-overflow-scrolling:touch;padding:4px 18px 18px;flex:1 1 auto;}
+.blk{padding:16px 0;border-bottom:1px solid var(--line2);}
+.blk:last-child{border-bottom:0;}
+.blk-title{font-size:11.5px;color:var(--ink3);letter-spacing:.06em;margin:0 0 10px;font-weight:500;}
+.kv{display:grid;grid-template-columns:5.2rem minmax(0,1fr);gap:8px 12px;font-size:13.5px;}
+.kv dt{color:var(--ink3);font-size:13px;}
+.kv dd{margin:0;color:var(--ink);}
+.grade-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line2);border:1px solid var(--line2);border-radius:8px;overflow:hidden;}
+.grade-cell{background:#FCFCFA;padding:10px 11px;}
+.grade-cell span{display:block;font-size:11px;color:var(--ink3);}
+.grade-cell b{display:block;font-size:16px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.01em;}
+.notes{margin:0;padding-left:1.05em;font-size:13px;color:var(--ink2);}
+.notes li{margin:5px 0;}
+.notes li::marker{color:var(--line);}
+.sheet-foot{flex:0 0 auto;display:flex;gap:10px;padding:12px 18px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--line2);background:var(--panel);}
+.sheet-foot .btn{flex:1 1 0;display:flex;align-items:center;justify-content:center;}
+.tip{font-size:12.5px;color:var(--ink3);line-height:1.6;}
+.foot{padding:22px 18px 120px;font-size:12px;color:var(--ink3);line-height:1.7;background:var(--panel);border-top:1px solid var(--line2);}
+.foot b{color:var(--ink2);font-weight:600;display:block;margin-bottom:5px;font-size:12.5px;}
+.toast{position:fixed;left:50%;bottom:96px;z-index:60;transform:translate(-50%,10px);background:rgba(18,22,26,.92);color:#fff;font-size:13px;padding:9px 16px;border-radius:8px;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s,visibility .2s;max-width:80vw;text-align:center;}
+.toast.on{opacity:1;visibility:visible;transform:translate(-50%,0);}
+@media (min-width:768px){
+  .mast{padding:40px 32px 24px;max-width:920px;margin:0 auto;}
+  .mast h1{font-size:40px;}
+  .sum-num{font-size:64px;}
+  .search{margin:24px auto 0;max-width:920px;width:calc(100% - 64px);}
+  .chips{padding:14px 32px 4px;max-width:920px;margin:0 auto;}
+  .board{max-width:920px;margin:20px auto 0;border-radius:18px;box-shadow:0 1px 0 var(--line),0 0 0 1px var(--line);padding-bottom:24px;}
+  .row{padding:16px 26px;grid-template-columns:3.2rem minmax(0,1fr) auto;}
+  .row-line h3{font-size:17px;}
+  .dock{left:50%;transform:translateX(-50%);max-width:600px;border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;}
+  .foot{max-width:920px;margin:0 auto;border-radius:0 0 18px 18px;padding-bottom:36px;}
+  .sheet{max-width:600px;margin:0 auto;}
+}
+@media (prefers-reduced-motion:reduce){.sheet{transition:none;}.scrim{transition:none;}.toast{transition:none;}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-top">
+    <span class="shop" id="shopName">机库二手</span>
+    <span class="stamp" id="stamp"></span>
+  </div>
+  <h1>库存台账</h1>
+  <p class="lede" id="lede">一机一况，参数和缺陷都写清楚。看中就聊，支持当面验机。</p>
+  <div class="summary">
+    <div class="sum-hero">
+      <span class="sum-num" id="saleNum">0</span>
+      <span class="sum-unit">台在售</span>
+    </div>
+    <div class="sum-side">
+      <span id="priceRange">—</span>
+      <span id="brandLine">—</span>
+    </div>
+  </div>
+</header>
+
+<div class="search">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.6 15.6 20 20"/></svg>
+  <input id="q" type="search" placeholder="搜型号、存储、颜色" autocomplete="off">
+</div>
+
+<div class="chips" id="brandChips"></div>
+
+<section class="board">
+  <div class="board-head">
+    <div class="meta">筛选结果 <b id="count">0</b> 台</div>
+    <div class="sortwrap">
+      <select id="sort" aria-label="排序方式">
+        <option value="default">默认顺序</option>
+        <option value="price-asc">价格从低到高</option>
+        <option value="price-desc">价格从高到低</option>
+        <option value="batt">按电池健康</option>
+      </select>
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10l5 5 5-5"/></svg>
+    </div>
+  </div>
+  <div id="list"></div>
+  <div class="empty" id="empty">没有符合条件的机器。换个关键词，或者点「全部」看完整库存。</div>
+</section>
+
+<footer class="foot">
+  <b>交易说明</b>
+  所有机器为实拍实物，成色和瑕疵在详情里逐条说明。<br>
+  支持当面验机、顺丰到付，非人为损坏 30 天内可退可换。<br>
+  价格随行情浮动，以当天沟通为准。
+</footer>
+
+<div class="dock">
+  <div class="dock-info">
+    <b>微信咨询</b>
+    <span id="wxid">点右侧复制微信号</span>
+  </div>
+  <button class="btn btn-primary" id="dockBtn" type="button">复制微信号</button>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="grab" aria-hidden="true"></div>
+  <div class="sheet-head">
+    <div>
+      <h2 id="sModel">—</h2>
+      <div class="sheet-sub" id="sSub">—</div>
+      <div class="sheet-price"><b id="sPrice">—</b><span class="st st-on" id="sState">在售</span></div>
+    </div>
+    <button class="iconbtn" id="sClose" type="button" aria-label="关闭详情">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <div class="sheet-body" id="sBody"></div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="sCopy" type="button">复制型号</button>
+    <button class="btn btn-primary" id="sAsk" type="button">微信问这台</button>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   云端配置：换成你的 Gitee 用户名即可
+   ============================================================ */
+var CLOUD = { owner:"haoxinshuma", repo:"haoxin-digital", path:"data/stock.json", branch:"master" };
+
+/* 兜底数据：云端读不到时用这份（管理台导出时会自动替换） */
+var P = {"items":[{"id":"S001","no":1,"brand":"Apple","model":"iPhone 15 Pro","storage":"256GB","color":"原色钛金属","net":"国行","batt":"91%","cond":"95新","price":4280,"status":"在售","specs":[["屏幕","6.1 英寸 OLED，120Hz 自适应"],["芯片","A17 Pro"],["摄像头","4800 万主摄 + 超广角 + 3 倍长焦"],["系统","iOS 26"],["机身","钛金属中框，187g"]],"flaws":["边框右侧一处细划痕，约 3mm，正看不明显","屏幕无划痕，后盖无磕碰","所有功能实机测试正常，无拆修"],"acc":"原装 Type-C 数据线，无盒","warranty":"非人为损坏 30 天质保"},{"id":"S002","no":2,"brand":"Apple","model":"iPhone 14","storage":"128GB","color":"蓝色","net":"国行","batt":"88%","cond":"95新","price":2699,"status":"在售","specs":[["屏幕","6.1 英寸 OLED"],["芯片","A15 仿生"],["摄像头","1200 万双摄"],["系统","iOS 26"],["机身","172g，铝合金边框"]],"flaws":["屏幕右下有一处淡淡的使用痕迹，贴膜后不可见","边框无磕碰","电池健康 88%，日常够用"],"acc":"数据线一条","warranty":"非人为损坏 30 天质保"},{"id":"S003","no":3,"brand":"Apple","model":"iPhone 13","storage":"128GB","color":"星光色","net":"国行","batt":"86%","cond":"9成新","price":2199,"status":"在售","specs":[["屏幕","6.1 英寸 OLED"],["芯片","A15 仿生"],["摄像头","1200 万双摄"],["系统","iOS 26"],["机身","173g"]],"flaws":["边框四角有轻微使用痕迹","屏幕有一处约 1cm 浅划，亮屏不明显","无进水、无拆修"],"acc":"数据线一条","warranty":"非人为损坏 30 天质保"},{"id":"S004","no":4,"brand":"Apple","model":"iPhone 12","storage":"128GB","color":"白色","net":"国行","batt":"82%","cond":"9成新","price":1699,"status":"已售","specs":[["屏幕","6.1 英寸 OLED"],["芯片","A14 仿生"],["摄像头","1200 万双摄"],["系统","iOS 26"],["机身","162g"]],"flaws":["后盖有轻微磨砂痕迹","屏幕完好","电池健康 82%"],"acc":"数据线一条","warranty":"非人为损坏 30 天质保"},{"id":"S005","no":5,"brand":"Apple","model":"iPhone SE 3","storage":"64GB","color":"午夜色","net":"国行","batt":"90%","cond":"99新","price":1299,"status":"在售","specs":[["屏幕","4.7 英寸 LCD，保留 Home 键"],["芯片","A15 仿生"],["摄像头","1200 万单摄"],["系统","iOS 26"],["机身","144g，小屏备用机首选"]],"flaws":["几乎无使用痕迹，可当新机看","无磕碰、无划痕"],"acc":"数据线一条","warranty":"非人为损坏 30 天质保"},{"id":"S006","no":6,"brand":"Apple","model":"iPhone Air","storage":"256GB","color":"天蓝色","net":"国行","batt":"100%","cond":"99新","price":5599,"status":"在售","specs":[["屏幕","6.5 英寸 OLED，120Hz"],["芯片","A19 Pro"],["摄像头","4800 万 Fusion 单摄"],["系统","iOS 26"],["机身","5.64mm 超薄钛金属，165g"]],"flaws":["上一位用户用了一个月，成色接近全新","边框无磕碰，屏幕无划痕","电池健康 100%"],"acc":"原装数据线，原盒","warranty":"非人为损坏 30 天质保"},{"id":"S007","no":7,"brand":"Apple","model":"iPhone 17","storage":"256GB","color":"薰衣草紫","net":"国行","batt":"100%","cond":"全新未拆","price":5999,"status":"在售","specs":[["屏幕","6.3 英寸 OLED，120Hz"],["芯片","A19"],["摄像头","4800 万主摄 + 4800 万超广角"],["系统","iOS 26"],["机身","铝合金边框，177g"]],"flaws":["原封未拆，未激活","国行正品，可官网验真","支持当面拆封验机"],"acc":"原装全套（盒、线、卡针）","warranty":"官方保修 + 店保 30 天"},{"id":"S008","no":8,"brand":"华为","model":"Mate 60 Pro","storage":"12+512","color":"雅丹黑","net":"国行","batt":"92%","cond":"95新","price":3299,"status":"在售","specs":[["屏幕","6.82 英寸 LTPO OLED，120Hz"],["芯片","麒麟 9000S"],["摄像头","5000 万可变光圈三摄"],["系统","HarmonyOS 5"],["机身","225g，支持卫星通话"]],"flaws":["边框右上角一处小磕，约 2mm","屏幕完好，昆仑玻璃无划痕","电池健康 92%"],"acc":"原装充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S009","no":9,"brand":"华为","model":"P40 Pro","storage":"8+256","color":"亮黑色","net":"国行","batt":"85%","cond":"9成新","price":1299,"status":"在售","specs":[["屏幕","6.58 英寸 OLED，90Hz"],["芯片","麒麟 990 5G"],["摄像头","5000 万徕卡四摄"],["系统","HarmonyOS 4"],["机身","209g，四曲满溢屏"]],"flaws":["后盖有一道细划痕","屏幕完好，无烧屏","电池健康 85%，建议更换或搭配使用"],"acc":"充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S010","no":10,"brand":"小米","model":"小米 14","storage":"12+256","color":"岩石青","net":"国行","batt":"90%","cond":"95新","price":2299,"status":"在售","specs":[["屏幕","6.36 英寸 1.5K，120Hz"],["芯片","骁龙 8 Gen 3"],["摄像头","徕卡三摄，5000 万主摄"],["系统","HyperOS 2"],["机身","193g，小屏旗舰"]],"flaws":["屏幕有一处极浅划痕，贴膜后不可见","边框无磕碰","无拆修"],"acc":"原装充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S011","no":11,"brand":"小米","model":"Redmi K70","storage":"12+512","color":"晴雪白","net":"国行","batt":"93%","cond":"95新","price":1499,"status":"在售","specs":[["屏幕","6.67 英寸 2K，120Hz"],["芯片","骁龙 8 Gen 2"],["摄像头","5000 万三摄"],["系统","HyperOS 2"],["机身","209g，5000mAh"]],"flaws":["整体成色好，无明显磕碰","屏幕完好","电池健康 93%"],"acc":"原装充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S012","no":12,"brand":"一加","model":"一加 Ace 3","storage":"16+512","color":"极质黑","net":"国行","batt":"96%","cond":"99新","price":1399,"status":"在售","specs":[["屏幕","6.78 英寸 1.5K，120Hz"],["芯片","骁龙 8 Gen 2"],["摄像头","5000 万主摄"],["系统","ColorOS 15"],["机身","207g，5500mAh"]],"flaws":["准新机，仅拆封使用短时间","无磕碰、无划痕"],"acc":"原装充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S013","no":13,"brand":"vivo","model":"vivo X100","storage":"12+256","color":"落日橙","net":"国行","batt":"94%","cond":"95新","price":2599,"status":"在售","specs":[["屏幕","6.78 英寸 1.5K，120Hz"],["芯片","天玑 9300"],["摄像头","蔡司 5000 万三摄"],["系统","OriginOS 5"],["机身","206g，5000mAh"]],"flaws":["边框一处浅痕","屏幕完好","电池健康 94%"],"acc":"原装充电器 + 数据线","warranty":"非人为损坏 30 天质保"},{"id":"S014","no":14,"brand":"OPPO","model":"Find X7","storage":"12+256","color":"大漠银月","net":"国行","batt":"89%","cond":"9成新","price":2199,"status":"已售","specs":[["屏幕","6.74 英寸 1.5K，120Hz"],["芯片","天玑 9300"],["摄像头","5000 万三摄"],["系统","ColorOS 15"],["机身","202g"]],"flaws":["边框轻微使用痕迹","屏幕完好"],"acc":"充电器 + 数据线","warranty":"非人为损坏 30 天质保"}],"settings":{"shop":"机库二手 · 手机库存","wx":"jiku-ershou","lede":"一机一况，参数和缺陷都写清楚。看中就聊，支持当面验机。"},"updatedAt":"2026-11-09 18:20"};
+
+var DATA = P.items || [];
+var S = P.settings || {};
+var WX = S.wx || "";
+var state = { q:"", brand:"all", only:false, sort:"default" };
+
+var $ = function(id){ return document.getElementById(id); };
+function money(n){ return "¥" + (Number(n)||0).toLocaleString("zh-CN"); }
+function battNum(v){ return parseInt(v,10) || 0; }
+function esc(s){ return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+function renderHead(){
+  $("shopName").textContent = S.shop || "手机库存";
+  $("lede").textContent = S.lede || "";
+  var d = new Date();
+  var stampTxt = "更新 " + (d.getMonth()+1) + "月" + d.getDate() + "日";
+  if(P.updatedAt){
+    var t = String(P.updatedAt);
+    stampTxt = "更新 " + t.slice(5, 10).replace("-", "月") + "日 " + t.slice(11, 16);
+  }
+  $("stamp").textContent = stampTxt;
+
+  var onSale = DATA.filter(function(x){ return x.status === "在售"; });
+  $("saleNum").textContent = onSale.length;
+
+  var prices = onSale.map(function(x){ return Number(x.price) || 0; }).filter(function(n){ return n > 0; });
+  if(prices.length){
+    $("priceRange").innerHTML = "价格 <b>¥" + Math.min.apply(null, prices).toLocaleString("zh-CN") + "</b> 起 · 最高 <b>¥" + Math.max.apply(null, prices).toLocaleString("zh-CN") + "</b>";
+  } else {
+    $("priceRange").textContent = "暂无在售机器";
+  }
+
+  var brands = {};
+  DATA.forEach(function(x){ brands[x.brand] = (brands[x.brand]||0) + 1; });
+  var names = Object.keys(brands);
+  $("brandLine").textContent = names.length ? names.map(function(b){ return b + " " + brands[b]; }).join(" / ") : "—";
+  $("wxid").textContent = WX ? (WX + "（点右侧复制）") : "微信号未填写";
+
+  var keep = state.brand;
+  var chips = ['<button class="chip" data-brand="all" aria-pressed="' + (keep==="all") + '">全部<span class="n">' + DATA.length + '</span></button>'];
+  names.sort(function(a,b){ return brands[b] - brands[a]; });
+  names.forEach(function(b){
+    chips.push('<button class="chip" data-brand="' + esc(b) + '" aria-pressed="' + (keep===b) + '">' + esc(b) + '<span class="n">' + brands[b] + '</span></button>');
+  });
+  chips.push('<button class="chip" data-only="1" aria-pressed="' + state.only + '">只看在售</button>');
+  $("brandChips").innerHTML = chips.join("");
+}
+
+function matches(d){
+  if(state.brand !== "all" && d.brand !== state.brand) return false;
+  if(state.only && d.status !== "在售") return false;
+  if(!state.q) return true;
+  var key = (d.brand + d.model + d.storage + d.color + d.net + d.cond).toLowerCase();
+  return key.indexOf(state.q.toLowerCase()) !== -1;
+}
+
+function sortRows(rows){
+  if(state.sort === "price-asc") return rows.sort(function(a,b){ return a.price - b.price; });
+  if(state.sort === "price-desc") return rows.sort(function(a,b){ return b.price - a.price; });
+  if(state.sort === "batt") return rows.sort(function(a,b){ return battNum(b.batt) - battNum(a.batt); });
+  return rows.sort(function(a,b){ return a.no - b.no; });
+}
+
+function rowHTML(d){
+  var sold = d.status === "已售";
+  var stCls = d.status === "预定" ? "st-book" : (sold ? "st-off" : "st-on");
+  return '<button class="row' + (sold ? " is-sold" : "") + '" data-id="' + esc(d.id || d.no) + '" type="button">'
+    + '<div class="row-idx">' + String(d.no || 0).padStart(3,"0") + '</div>'
+    + '<div class="row-body">'
+    +   '<div class="row-line"><h3>' + esc(d.model) + '</h3><span class="bmark">' + esc(d.brand) + '</span></div>'
+    +   '<div class="row-spec">' + esc(d.storage) + (d.color ? ' · ' + esc(d.color) : '') + (d.net ? ' · ' + esc(d.net) : '') + '</div>'
+    +   '<div class="row-flags"><span class="flag hl">' + esc(d.cond) + '</span>' + (d.batt ? '<span class="flag">电池 ' + esc(d.batt) + '</span>' : '') + '</div>'
+    + '</div>'
+    + '<div class="row-price"><b' + (sold ? ' class="old"' : '') + '>' + money(d.price) + '</b>'
+    +   '<span class="st ' + stCls + '">' + esc(d.status) + '</span></div>'
+    + '</button>';
+}
+
+function render(){
+  var rows = sortRows(DATA.filter(matches));
+  $("list").innerHTML = rows.map(rowHTML).join("");
+  $("count").textContent = rows.length;
+  $("empty").classList.toggle("show", rows.length === 0);
+}
+
+/* ===== 云端同步 ===== */
+function b64decode(str){
+  try{
+    var bin = atob(String(str).replace(/\s/g, ""));
+    var bytes = new Uint8Array(bin.length);
+    for(var i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder("utf-8").decode(bytes);
+  }catch(e){ return ""; }
+}
+
+function applyPayload(obj){
+  if(!obj || !Array.isArray(obj.items)) return false;
+  P = obj;
+  DATA = obj.items;
+  S = obj.settings || S;
+  WX = S.wx || WX;
+  renderHead();
+  render();
+  return true;
+}
+
+function fetchCloud(){
+  if(!CLOUD.owner) return;
+  var url = "https://gitee.com/api/v5/repos/" + encodeURIComponent(CLOUD.owner) + "/" + encodeURIComponent(CLOUD.repo)
+          + "/contents/" + CLOUD.path.split("/").map(encodeURIComponent).join("/")
+          + "?ref=" + encodeURIComponent(CLOUD.branch || "master") + "&t=" + Date.now();
+  fetch(url, {cache:"no-store"})
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(j){
+      var txt = b64decode(j.content || "");
+      if(!txt) return;
+      applyPayload(JSON.parse(txt));
+    })
+    .catch(function(){ /* 静默：继续用兜底数据 */ });
+}
+
+/* ===== 交互 ===== */
+$("q").addEventListener("input", function(){ state.q = this.value.trim(); render(); });
+$("brandChips").addEventListener("click", function(e){
+  var b = e.target.closest(".chip");
+  if(!b) return;
+  if(b.dataset.only){
+    state.only = !state.only;
+    b.setAttribute("aria-pressed", String(state.only));
+  } else {
+    state.brand = b.dataset.brand;
+    Array.prototype.forEach.call(this.querySelectorAll(".chip[data-brand]"), function(c){
+      c.setAttribute("aria-pressed", String(c.dataset.brand === state.brand));
+    });
+  }
+  render();
+});
+$("sort").addEventListener("change", function(){ state.sort = this.value; render(); });
+
+var sheet = $("sheet"), scrim = $("scrim"), current = null;
+
+function openSheet(id){
+  var d = null;
+  for(var i=0;i<DATA.length;i++){ if(String(DATA[i].id || DATA[i].no) === String(id)){ d = DATA[i]; break; } }
+  if(!d) return;
+  current = d;
+  $("sModel").textContent = d.model;
+  $("sSub").textContent = [d.storage, d.color, d.net].filter(Boolean).join(" · ");
+  $("sPrice").textContent = money(d.price);
+  var st = $("sState");
+  st.textContent = d.status;
+  st.className = "st " + (d.status === "已售" ? "st-off" : (d.status === "预定" ? "st-book" : "st-on"));
+
+  var kv = "";
+  (d.specs || []).forEach(function(pair){
+    kv += "<dt>" + esc(pair[0] || "说明") + "</dt><dd>" + esc(pair[1]) + "</dd>";
+  });
+  var flaws = (d.flaws || []).length
+    ? '<ul class="notes">' + d.flaws.map(function(f){ return "<li>" + esc(f) + "</li>"; }).join("") + "</ul>"
+    : '<p class="tip">无特别瑕疵，实物以实拍为准。</p>';
+
+  $("sBody").innerHTML = ""
+    + '<div class="blk"><div class="grade-row">'
+    +   '<div class="grade-cell"><span>成色</span><b>' + esc(d.cond) + '</b></div>'
+    +   '<div class="grade-cell"><span>电池健康</span><b>' + esc(d.batt || "—") + '</b></div>'
+    +   '<div class="grade-cell"><span>版本</span><b>' + esc(d.net || "—") + '</b></div>'
+    + '</div></div>'
+    + '<div class="blk"><p class="blk-title">机器参数</p><dl class="kv">' + (kv || '<dt>说明</dt><dd>暂无</dd>') + '</dl></div>'
+    + '<div class="blk"><p class="blk-title">成色与瑕疵（逐条说明）</p>' + flaws + '</div>'
+    + '<div class="blk"><p class="blk-title">配件与售后</p><dl class="kv">'
+    +   '<dt>随机配件</dt><dd>' + esc(d.acc || "—") + '</dd>'
+    +   '<dt>保修</dt><dd>' + esc(d.warranty || "—") + '</dd>'
+    + '</dl></div>'
+    + '<div class="blk"><p class="tip">实物以实拍图为准，可预约当面验机。价格随行情小幅浮动，下单前先微信确认。</p></div>';
+
+  $("sBody").scrollTop = 0;
+  scrim.classList.add("on");
+  sheet.classList.add("on");
+  document.body.style.overflow = "hidden";
+}
+function closeSheet(){
+  scrim.classList.remove("on");
+  sheet.classList.remove("on");
+  document.body.style.overflow = "";
+}
+
+$("list").addEventListener("click", function(e){
+  var row = e.target.closest(".row");
+  if(!row) return;
+  openSheet(row.dataset.id);
+});
+$("sClose").addEventListener("click", closeSheet);
+scrim.addEventListener("click", closeSheet);
+document.addEventListener("keydown", function(e){
+  if(e.key === "Escape" && sheet.classList.contains("on")) closeSheet();
+});
+
+var toastEl = $("toast"), toastTimer = null;
+function toast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add("on");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ toastEl.classList.remove("on"); }, 1700);
+}
+function copyText(txt, okMsg){
+  if(!txt){ toast("微信号还没填，联系店家要一下"); return; }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(function(){ toast(okMsg); }).catch(function(){ fallback(txt, okMsg); });
+  } else { fallback(txt, okMsg); }
+}
+function fallback(txt, okMsg){
+  var ta = document.createElement("textarea");
+  ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); toast(okMsg); } catch(e){ toast("复制失败：" + txt); }
+  document.body.removeChild(ta);
+}
+$("dockBtn").addEventListener("click", function(){ copyText(WX, "微信号已复制：" + WX); });
+$("wxid").addEventListener("click", function(){ copyText(WX, "微信号已复制：" + WX); });
+$("sCopy").addEventListener("click", function(){
+  if(!current) return;
+  var txt = current.model + " " + current.storage + " " + current.color;
+  copyText(txt, "已复制：" + txt);
+});
+$("sAsk").addEventListener("click", function(){
+  if(!current) return;
+  copyText(WX, "微信号已复制，加上备注：想问问 " + current.model);
+});
+
+/* 首次渲染 + 拉云端 + 页面可见时自动刷新 */
+renderHead();
+render();
+fetchCloud();
+document.addEventListener("visibilitychange", function(){
+  if(document.visibilityState === "visible") fetchCloud();
+});
+setInterval(function(){
+  if(document.visibilityState === "visible") fetchCloud();
+}, 60000);
+</script>
+</body>
+</html>
